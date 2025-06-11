@@ -1,12 +1,11 @@
 'use client'
-import { cn, configureAssistant, getSubjectColor } from '@/lib/utils'
+import soundwaves from '@/constants/soundwaves.json';
+import { createSession } from '@/lib/actions/companion.action';
+import { cn, configureAssistant, getSubjectColor } from '@/lib/utils';
 import { vapi } from '@/lib/vapi.sdk';
 import Lottie, { LottieRefCurrentProps } from 'lottie-react';
 import Image from 'next/image';
-import React, { useEffect, useRef, useState } from 'react'
-import soundwaves from '@/constants/soundwaves.json'
-import { voices } from '@/constants';
-import { createSession } from '@/lib/actions/companion.action';
+import { useEffect, useRef, useState } from 'react';
 
 
 enum CallStatus {
@@ -45,7 +44,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
             if (message.type == "transcript") {
 
-                let newMessage: SavedMessage = {
+                const newMessage: SavedMessage = {
                     role: message.role,
                     content: message.transcript,
                 }

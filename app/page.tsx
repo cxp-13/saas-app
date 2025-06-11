@@ -1,8 +1,6 @@
 import CompanionCard from '@/components/CompanionCard'
 import CompanionsList from '@/components/CompanionsList'
 import CTA from '@/components/CTA'
-import { Button } from '@/components/ui/button'
-import { recentSessions } from '@/constants'
 import { getAllCompanions, getUserSessions } from '@/lib/actions/companion.action'
 import { getSubjectColor } from '@/lib/utils'
 import { auth } from '@clerk/nextjs/server'
@@ -10,7 +8,7 @@ import { auth } from '@clerk/nextjs/server'
 const Page = async () => {
   const companions = await getAllCompanions({ limit: 3 });
   const { userId } = await auth();
-  let userCompanions: any[] = [];
+  let userCompanions: Companion[] = [];
 
 
   if (userId) {

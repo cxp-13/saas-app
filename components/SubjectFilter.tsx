@@ -1,18 +1,17 @@
 'use client'
-import React, { useEffect, useState } from 'react'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { subjects } from '@/constants'
+} from "@/components/ui/select";
+import { subjects } from '@/constants';
 import { formUrlQuery, removeKeysFromUrlQuery } from '@jsmastery/utils';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 const SubjectFilter = () => {
-  const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [selectSubject, setSelectSubject] = useState('');

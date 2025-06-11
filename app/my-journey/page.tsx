@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/accordion"
 import { getUserCompanions, getUserSessions } from "@/lib/actions/companion.action"
 import { currentUser } from "@clerk/nextjs/server"
-import { getCurrentScope } from "@sentry/nextjs"
 import Image from "next/image"
 import { redirect } from "next/navigation"
 const Profile = async () => {

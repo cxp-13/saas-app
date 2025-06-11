@@ -1,15 +1,12 @@
-import Image from 'next/image'
-import Link from 'next/link'
-import React from 'react'
-import NavItems from './NavItems'
 import {
-    ClerkProvider,
     SignInButton,
-    SignUpButton,
     SignedIn,
     SignedOut,
-    UserButton,
+    UserButton
 } from '@clerk/nextjs'
+import Image from 'next/image'
+import Link from 'next/link'
+import NavItems from './NavItems'
 
 const Navbar = () => {
     return (
