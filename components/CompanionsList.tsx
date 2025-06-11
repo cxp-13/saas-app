@@ -1,4 +1,3 @@
-import React from 'react'
 import {
     Table,
     TableBody,
@@ -11,6 +10,9 @@ import {
 import { cn, getSubjectColor } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getAllCompanions, getUserSessions } from '@/lib/actions/companion.action';
+import { auth } from '@clerk/nextjs/server';
+
 
 interface CompanionsListProps {
     title?: string;
@@ -20,7 +22,7 @@ interface CompanionsListProps {
 
 const CompanionsList = ({ title, companions, classNames }: CompanionsListProps) => {
     return (
-        <article className={cn('companion-list', classNames)}>
+        <article className={cn('companion-list')}>
             <h2 className='font-bold text-3xl'>Recent Session</h2>
             <Table>
                 <TableCaption>A list of your recent invoices.</TableCaption>

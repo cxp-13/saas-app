@@ -3,40 +3,42 @@ import CompanionsList from '@/components/CompanionsList'
 import CTA from '@/components/CTA'
 import { Button } from '@/components/ui/button'
 import { recentSessions } from '@/constants'
-import React from 'react'
+import { getAllCompanions, getUserSessions } from '@/lib/actions/companion.action'
+import { getSubjectColor } from '@/lib/utils'
+import { auth } from '@clerk/nextjs/server'
 
-const Page = () => {
+const Page = async () => {
+  const companions = await getAllCompanions({ limit: 3 });
+  const { userId } = await auth();
+  let userCompanions: any[] = [];
+
+
+  if (userId) {
+    const sessions = await getUserSessions(userId)
+    console.log("sessions", sessions)
+    userCompanions = sessions;
+  }
+
+
+
   return (
     <main>
       <h1 className="text-2xl underline">Popular Companions</h1>
       <section className='home-section'>
-        <CompanionCard
-          id="123"
-          name="Neura the Brainy Explorer"
-          topic="Neural Network of the Brain"
-          subject="science"
-          duration={10}
-          color="#ffda6e"
-        />
-        <CompanionCard
-          id="456"
-          name="Countsy the Number Wizard"
-          topic="Derivatives & Integrals"
-          subject="maths "
-          duration={30}
-          color="#e5d0ff"
-        />
-        <CompanionCard
-          id="789"
-          name="Verba the Vocabulary Builder"
-          topic="language"
-          subject="English Literature"
-          duration={3}
-          color="#BDE7FF"
-        />
+        {
+          companions.map((companion) => (
+            <CompanionCard
+              key={companion.id}
+              {...companion}
+              color={getSubjectColor(companion.subject)}
+            />
+          ))
+        }
+
+
       </section>
       <section className='home-section'>
-        <CompanionsList companions={recentSessions} />
+        <CompanionsList companions={userCompanions}/>
         <CTA />
 
       </section>

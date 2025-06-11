@@ -1,10 +1,12 @@
 'use client'
-import { cn, getSubjectColor } from '@/lib/utils'
+import { cn, configureAssistant, getSubjectColor } from '@/lib/utils'
 import { vapi } from '@/lib/vapi.sdk';
 import Lottie, { LottieRefCurrentProps } from 'lottie-react';
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react'
 import soundwaves from '@/constants/soundwaves.json'
+import { voices } from '@/constants';
+import { createSession } from '@/lib/actions/companion.action';
 
 
 enum CallStatus {
@@ -20,6 +22,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
     const [isSpeaking, setIsSpeaking] = useState(false);
     const lottieRef = useRef<LottieRefCurrentProps>(null);
     const [isMuted, setIsMuted] = useState(false);
+    const [messgaes, setMessages] = useState<SavedMessage[]>([]);
 
 
     useEffect(() => {
@@ -32,9 +35,25 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
     useEffect(() => {
         const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
-        const onCallEnd = () => setCallStatus(CallStatus.FINISHED);
+        const onCallEnd = async () => {
+            await createSession(companionId);
+            setCallStatus(CallStatus.FINISHED);
+        };
 
-        const onMessage = () => { }
+        const onMessage = (message: Message) => {
+
+
+            if (message.type == "transcript") {
+
+                let newMessage: SavedMessage = {
+                    role: message.role,
+                    content: message.transcript,
+                }
+                if (message.transcriptType == 'final') {
+                    setMessages((prev) => [newMessage, ...prev]);
+                }
+            }
+        }
 
         const onSpeechStart = () => setIsSpeaking(true);
         const onSpeechEnd = () => setIsSpeaking(false);
@@ -64,22 +83,32 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
     const toggleMicrophone = () => {
         const isMuted = vapi.isMuted();
+        console.log("isMuted", isMuted)
         vapi.setMuted(!isMuted);
         setIsMuted(!isMuted)
     }
 
 
     const toggleSession = () => {
+        const assistantOverrides = {
+            variableValues: {
+                subject, topic, style
+            },
+            clientMessages: ['transcript', 'model-output'],
+            serverMessages: []
+        };
+
+        const conf = configureAssistant(voice, style);
         if (callStatus == CallStatus.INACTIVE || callStatus == CallStatus.FINISHED) {
-            vapi.start('81512dc0-e6fa-4589-9b58-20a21887e26e');
+            vapi.start(conf, assistantOverrides);
             setCallStatus(CallStatus.CONNECTING)
-            vapi.send({
-                type: 'add-message',
-                message: {
-                    role: 'system',
-                    content: 'The user has pressed the button, say hello',
-                },
-            });
+            // vapi.send({
+            //     type: 'add-message',
+            //     message: {
+            //         role: 'system',
+            //         content: 'The user has pressed the button, say hello',
+            //     },
+            // });
         } else if (callStatus == CallStatus.ACTIVE) {
             vapi.stop();
             setCallStatus(CallStatus.FINISHED);
@@ -118,7 +147,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                             {userName}
                         </p>
                     </div>
-                    <button className='btn-mic' onClick={toggleMicrophone}>
+                    <button className='btn-mic' onClick={toggleMicrophone} disabled={callStatus != CallStatus.ACTIVE}>
                         <Image src={isMuted ? '/icons/mic-off.svg' : '/icons/mic-on.svg'} alt="mic" width={36} height={36} />
                         <p className='max-sm:hidden'>
                             {
@@ -128,7 +157,7 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
                     </button>
 
 
-                    <button className={cn('rounded-lg py-2 cursor-pointer transition-colors w-full bg-[#F75353] text-white')} onClick={toggleSession}>
+                    <button className={cn('rounded-lg py-2 cursor-pointer transition-colors w-full  text-white', callStatus == CallStatus.ACTIVE ? 'bg-green-500' : 'bg-blue-500', callStatus == CallStatus.CONNECTING && 'bg-green-500 animate-pulse')} onClick={toggleSession}>
                         {
                             callStatus == CallStatus.ACTIVE ? 'End session' : callStatus == CallStatus.CONNECTING ? 'Connecting...' : 'Start session'
                         }
@@ -136,6 +165,31 @@ const CompanionComponent = ({ companionId, subject, topic, name, userName, userI
 
                 </div>
             </section>
+
+            <section className='transcript'>
+                <div className='transcript-message no-scrollbar'>
+                    {
+                        messgaes.map((message, index) => {
+                            if (message.role == 'assistant') {
+                                return (
+                                    <p key={index}>
+                                        {name.split(' ')[0]}: {message.content}
+                                    </p>
+                                )
+                            } else if (message.role == 'user') {
+
+                                return (
+                                    <p key={index}>
+                                        You: {message.content}
+                                    </p>
+                                )
+                            }
+                        })
+                    }
+                </div>
+            </section>
+
+            <div className='transcript-fade' />
         </section>
     )
 }
